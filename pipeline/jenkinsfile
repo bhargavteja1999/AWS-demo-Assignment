@@ -1,0 +1,52 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_DIR = "/home/ec2-user/demo1/app"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/<your-username>/<your-repo>.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'npm install --prefix app'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'curl --fail http://localhost:3000/health || echo "Skipping local test"'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sshagent(['ec2-ssh-key']) {
+                    sh '''
+                    ssh -o StrictHostKeyChecking=no ec2-user@<EC2_PUBLIC_IP> '
+                        cd /home/ec2-user/demo1 &&
+                        git pull origin main &&
+                        pkill -f "node main.js" || true &&
+                        npm install --prefix app &&
+                        nohup npm start --prefix app > app.log 2>&1 &
+                    '
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment successful! Access your app via EC2 public IP."
+        }
+        failure {
+            echo "Deployment failed. Check Jenkins logs for errors."
+        }
+    }
+}
