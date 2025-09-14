@@ -5,7 +5,10 @@ const app = express();
 const PORT = process.env.PORT || 80;
 
 app.get('/', (req, res) => {
-  res.send(`<h1>Hello from Node.js App!</h1><p>Served by: ${os.hostname()}</p>`);
+  res.send(`
+    <h1>Hello, from Node.js App!</h1>
+    <p>Served by: ${os.hostname()}</p>
+  `);
 });
 
 app.get('/health', (req, res) => {
