@@ -1,13 +1,15 @@
-name: Terraform EC2 Deployment
+name: terraform-apply
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
+    paths:
+      - "iac/main.tf"   # ✅ Only triggers when main.tf changes
+  workflow_dispatch:     # ✅ Still allow manual trigger
 
 jobs:
-  terraform:
+  terraform-apply:
     runs-on: ubuntu-latest
 
     steps:
