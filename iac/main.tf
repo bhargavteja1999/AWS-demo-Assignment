@@ -56,15 +56,23 @@ resource "aws_instance" "dev_ec2" {
   }
 }
 
-# 4️⃣ Provisioner: upload docker.sh and execute
 resource "null_resource" "run_docker_script" {
   depends_on = [aws_instance.dev_ec2]
 
   connection {
     type        = "ssh"
     host        = aws_instance.dev_ec2.public_ip
-    user        = "ec2-user"
+    user        = "ec2-user" # change to "ubuntu" if using Ubuntu AMI
     private_key = tls_private_key.generated_key.private_key_pem
+    timeout     = "4m"
+  }
+
+  # Add a short delay to ensure EC2 is ready
+  provisioner "remote-exec" {
+    inline = [
+      "echo 'Waiting for instance to be ready...'",
+      "sleep 30"
+    ]
   }
 
   provisioner "file" {
