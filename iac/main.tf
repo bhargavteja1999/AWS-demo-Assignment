@@ -1,10 +1,10 @@
 terraform {
   backend "s3" {
-    bucket         = "terraform-ec2-backup-bucket-2025-88" # ✅ Existing bucket (no creation)
+    bucket         = "terraform-ec2-backup-bucket-2025-88" 
     key            = "terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true
-    dynamodb_table = "terraform-ec2-backup-bucket-2025-88-tfstate-locks" # ✅ Make sure DynamoDB exists manually
+    dynamodb_table = "terraform-ec2-backup-bucket-2025-88-tfstate-locks" 
   }
 }
 
@@ -12,9 +12,7 @@ provider "aws" {
   region = var.aws_region
 }
 
-# -------------------------------
 # 1️⃣ Create Key Pair Dynamically
-# -------------------------------
 resource "tls_private_key" "generated_key" {
   algorithm = "RSA"
   rsa_bits  = 4096
@@ -31,9 +29,7 @@ resource "local_file" "private_key" {
   file_permission = "0400"
 }
 
-# -------------------------------
 # 2️⃣ Security Group
-# -------------------------------
 resource "aws_security_group" "dev_sg" {
   name        = var.security_group_name
   description = "Allow SSH, HTTP, and all traffic"
@@ -64,9 +60,7 @@ resource "aws_security_group" "dev_sg" {
   }
 }
 
-# -------------------------------
 # 3️⃣ Ubuntu EC2 Instance
-# -------------------------------
 resource "aws_instance" "dev_ec2" {
   ami                    = var.ami_id
   instance_type          = var.instance_type
@@ -78,9 +72,7 @@ resource "aws_instance" "dev_ec2" {
   }
 }
 
-# -------------------------------
 # 4️⃣ Install Docker & Run Script + Backup
-# -------------------------------
 resource "null_resource" "run_docker_script" {
   depends_on = [aws_instance.dev_ec2]
 
@@ -113,12 +105,17 @@ resource "null_resource" "run_docker_script" {
       "sudo usermod -aG docker ubuntu",
       "chmod +x /home/ubuntu/docker.sh",
       "sudo /home/ubuntu/docker.sh",
-      # Backup data to S3 bucket (safe if /home/ubuntu/data doesn't exist)
+      # Backup data to S3 bucket safely
       "aws s3 sync /home/ubuntu/data s3://terraform-ec2-backup-bucket-2025-88/ --region ${var.aws_region} || echo 'No data to sync, skipping backup...'"
     ]
   }
 }
 
-# -------------------------------
 # 5️⃣ Outputs
-# --------------------
+output "ec2_public_ip" {
+  value = aws_instance.dev_ec2.public_ip
+}
+
+output "private_key_file" {
+  value = local_file.private_key.filename
+}
