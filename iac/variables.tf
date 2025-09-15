@@ -11,9 +11,9 @@ variable "instance_type" {
 }
 
 variable "ami_id" {
-  description = "Amazon Linux 2 AMI ID"
+  description = "ubuntu AMI ID"
   type        = string
-  default     = "ami-0554aa6767e249943"
+  default     = "ami-0360c520857e3138f"
 }
 
 variable "key_pair_name" {
