@@ -23,7 +23,14 @@ resource "local_file" "private_key" {
 # 2️⃣ Create security group
 resource "aws_security_group" "dev_sg" {
   name        = var.security_group_name
-  description = "Allow all traffic"
+  description = "Allow SSH, HTTP, and all traffic"
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   ingress {
     from_port   = 0
@@ -44,7 +51,7 @@ resource "aws_security_group" "dev_sg" {
   }
 }
 
-# 3️⃣ Create EC2 instance
+# 3️⃣ Create Ubuntu EC2 instance
 resource "aws_instance" "dev_ec2" {
   ami                    = var.ami_id
   instance_type          = var.instance_type
@@ -56,19 +63,19 @@ resource "aws_instance" "dev_ec2" {
   }
 }
 
-# 4️⃣ Null Resource to Install Docker & Run Script
+# 4️⃣ Install Docker & run docker.sh
 resource "null_resource" "run_docker_script" {
   depends_on = [aws_instance.dev_ec2]
 
   connection {
     type        = "ssh"
     host        = aws_instance.dev_ec2.public_ip
-    user        = "ubuntu" # Change to "ubuntu" if using Ubuntu AMI
+    user        = "ubuntu"
     private_key = tls_private_key.generated_key.private_key_pem
     timeout     = "5m"
   }
 
-  # Wait for EC2 to finish bootstrapping
+  # Wait for EC2 to be ready
   provisioner "remote-exec" {
     inline = [
       "echo 'Waiting for EC2 to be ready...'",
@@ -79,19 +86,19 @@ resource "null_resource" "run_docker_script" {
 
   # Copy docker.sh to EC2
   provisioner "file" {
-    source      = "${path.module}/../docker.sh"
+    source      = "${path.module}/docker.sh"
     destination = "/home/ubuntu/docker.sh"
   }
 
   # Install Docker & run the script
   provisioner "remote-exec" {
     inline = [
-      "chmod +x /home/ubuntu/docker.sh",
       "sudo apt update -y",
-      "sudo apt install -y docker",
+      "sudo apt install -y docker.io",
       "sudo systemctl enable docker",
       "sudo systemctl start docker",
       "sudo usermod -aG docker ubuntu",
+      "chmod +x /home/ubuntu/docker.sh",
       "/home/ubuntu/docker.sh"
     ]
   }
