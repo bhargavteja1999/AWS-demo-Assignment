@@ -6,6 +6,10 @@ on:
     branches:
       - main
 
+defaults:
+  run:
+    working-directory: ./terraform   # Set Terraform folder
+
 jobs:
   terraform:
     runs-on: ubuntu-latest
@@ -21,8 +25,8 @@ jobs:
         with:
           terraform_version: 1.9.5
 
-      # Step 3: Debug - List files in repo root
-      - name: List repo files
+      # Step 3: Debug - list files to confirm .tf files exist
+      - name: List Terraform folder files
         run: ls -la
 
       # Step 4: Terraform Init
@@ -42,5 +46,5 @@ jobs:
         run: terraform apply -auto-approve
 
       # Step 8: Show Terraform Outputs
-      - name: Show Outputs
+      - name: Show Terraform Outputs
         run: terraform output
