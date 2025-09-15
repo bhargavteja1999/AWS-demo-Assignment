@@ -31,17 +31,25 @@ jobs:
         with:
           terraform_version: 1.9.8
 
-      # 4️⃣ Terraform Init (reconfigure to use remote state)
+      # 4️⃣ Terraform Init (reconfigure remote state)
       - name: Terraform Init
         run: terraform init -reconfigure -input=false
         working-directory: ./iac
 
-      # 5️⃣ Show Current State (Optional)
-      - name: Terraform Show State
-        run: terraform state list || echo "⚠️ No state found in S3"
+      # 5️⃣ Show Current State (Optional but helpful)
+      - name: Terraform State List
+        run: |
+          echo "Listing resources in Terraform state..."
+          terraform state list || echo "⚠️ No resources found in state"
         working-directory: ./iac
 
-      # 6️⃣ Terraform Destroy
+      # 6️⃣ Terraform Destroy (fails if no resources)
       - name: Terraform Destroy
-        run: terraform destroy -auto-approve -input=false
+        run: |
+          if terraform state list | grep .; then
+            echo "🚀 Destroying all resources..."
+            terraform destroy -auto-approve -input=false
+          else
+            echo "⚠️ No resources to destroy. Exiting."
+          fi
         working-directory: ./iac
