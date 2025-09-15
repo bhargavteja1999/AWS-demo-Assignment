@@ -1,7 +1,7 @@
 name: Terraform EC2 Deployment
 
 on:
-  workflow_dispatch: # Manual trigger
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -11,62 +11,43 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout Repo
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # 2️⃣ Configure AWS Credentials
-      - name: Configure AWS Credentials
+      - name: Set up AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # 3️⃣ Debug - List Repo Files
       - name: Debug - list repo files
         run: ls -R
 
-      # 4️⃣ Install Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.5
 
-      # 5️⃣ Terraform Init
       - name: Terraform Init
         run: terraform init
         working-directory: ./iac
 
-      # 6️⃣ Terraform Validate
-      - name: Terraform Validate
-        run: terraform validate
-        working-directory: ./iac
-
-      # 7️⃣ Destroy Previous Infra (Cleanup)
-      - name: Terraform Destroy (Cleanup)
-        run: terraform destroy -auto-approve || echo "Nothing to destroy"
-        working-directory: ./iac
-
-      # 8️⃣ Terraform Plan
       - name: Terraform Plan
         run: terraform plan
         working-directory: ./iac
 
-      # 9️⃣ Terraform Apply
       - name: Terraform Apply
         run: terraform apply -auto-approve
         working-directory: ./iac
 
-      # 🔟 Show Terraform Outputs
       - name: Show Terraform Outputs
         run: terraform output
         working-directory: ./iac
 
-
-      # ✅ Upload private key so you can download it
+      # ✅ Upload private key using latest version
       - name: Upload Private Key
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ec2-private-key
           path: ./iac/private_key.pem
