@@ -1,18 +1,14 @@
 name: Terraform EC2 Deployment
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # Trigger manually from GitHub Actions
   push:
     branches:
-      - main
+      - main # (Optional) runs automatically on push to main branch
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: ./terraform  # 👈 change this to the folder where your .tf files are
 
     steps:
       - name: Checkout repository
@@ -21,7 +17,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.9.5
+          terraform_version: 1.9.5 # Use the same version you use locally
 
       - name: Terraform Init
         run: terraform init
