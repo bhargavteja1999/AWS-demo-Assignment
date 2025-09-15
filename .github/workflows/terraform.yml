@@ -1,10 +1,10 @@
 name: Terraform EC2 Deployment
 
 on:
-  workflow_dispatch:    # Manual trigger
+  workflow_dispatch:
   push:
     branches:
-      - main           # Trigger on push to main
+      - main
 
 jobs:
   terraform:
@@ -21,24 +21,26 @@ jobs:
         with:
           terraform_version: 1.9.5
 
-      # Step 3: Debug - List files and check Docker version
-      - name: List repo files and check Docker
-        run: |
-          ls -la
-          docker --version
+      # Step 3: Debug - List files in repo root
+      - name: List repo files
+        run: ls -la
 
       # Step 4: Terraform Init
       - name: Terraform Init
         run: terraform init
 
-      # Step 5: Terraform Validate
+      # Step 5: Terraform Plan
+      - name: Terraform Plan
+        run: terraform plan
+
+      # Step 6: Terraform Validate
       - name: Terraform Validate
         run: terraform validate
 
-      # Step 6: Terraform Apply
+      # Step 7: Terraform Apply
       - name: Terraform Apply
         run: terraform apply -auto-approve
 
-      # Step 7: Show Terraform Outputs
+      # Step 8: Show Terraform Outputs
       - name: Show Outputs
         run: terraform output
