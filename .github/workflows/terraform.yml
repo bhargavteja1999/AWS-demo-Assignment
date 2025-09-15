@@ -1,7 +1,7 @@
 name: Terraform EC2 Deployment
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # Manual trigger
   push:
     branches:
       - main
@@ -11,44 +11,54 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout Repo
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up AWS Credentials
+      # 2️⃣ Configure AWS Credentials
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      # 3️⃣ Debug - List Repo Files
       - name: Debug - list repo files
         run: ls -R
 
+      # 4️⃣ Install Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.5
 
+      # 5️⃣ Terraform Init
       - name: Terraform Init
         run: terraform init
         working-directory: ./iac
 
-      - name: Terraform Plan (Before Destroy)
-        run: terraform plan -destroy
+      # 6️⃣ Terraform Validate
+      - name: Terraform Validate
+        run: terraform validate
         working-directory: ./iac
 
-      - name: Terraform Destroy (Clean Up Previous Resources)
-        run: terraform destroy -auto-approve
+      # 7️⃣ Destroy Previous Infra (Cleanup)
+      - name: Terraform Destroy (Cleanup)
+        run: terraform destroy -auto-approve || echo "Nothing to destroy"
         working-directory: ./iac
 
-      - name: Terraform Plan (Fresh Plan)
+      # 8️⃣ Terraform Plan
+      - name: Terraform Plan
         run: terraform plan
         working-directory: ./iac
 
-      - name: Terraform Apply (Deploy New Resources)
+      # 9️⃣ Terraform Apply
+      - name: Terraform Apply
         run: terraform apply -auto-approve
         working-directory: ./iac
 
+      # 🔟 Show Terraform Outputs
       - name: Show Terraform Outputs
         run: terraform output
         working-directory: ./iac
