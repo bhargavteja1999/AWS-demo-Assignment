@@ -1,0 +1,31 @@
+name: Terraform EC2 Deployment
+
+on:
+  workflow_dispatch: # Trigger manually from Actions tab
+  push:
+    branches:
+      - main 
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5 # Or the version you use locally
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+
+      - name: Show Public IP
+        run: terraform output public_ip
