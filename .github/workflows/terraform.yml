@@ -14,7 +14,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: List files (Debug)
+      - name: List files in repo root (debug)
         run: ls -la
 
       - name: Setup Terraform
