@@ -2,28 +2,41 @@ name: Terraform EC2 Deployment
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Step 2: Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.5
 
+      # Step 3: Optional debug - list files
+      - name: List repo files
+        run: ls -la
+
+      # Step 4: Terraform Init
       - name: Terraform Init
         run: terraform init
 
+      # Step 5: Terraform Validate
       - name: Terraform Validate
         run: terraform validate
 
+      # Step 6: Terraform Apply
       - name: Terraform Apply
         run: terraform apply -auto-approve
 
-      - name: Show Public IP
-        run: terraform output public_ip
+      # Step 7: Show Terraform Outputs
+      - name: Show Outputs
+        run: terraform output
