@@ -62,11 +62,4 @@ jobs:
           name: ec2-private-key
           path: ./iac/private_key.pem
 
-      # 🔟 Trigger Backup to S3 after EC2 is ready
-      - name: Backup EC2 Data to S3
-        run: |
-          echo "🚀 Running S3 Backup..."
-          EC2_IP=$(terraform -chdir=./iac output -raw ec2_public_ip)
-          chmod 400 ./iac/private_key.pem
-          ssh -o StrictHostKeyChecking=no -i ./iac/private_key.pem ubuntu@$EC2_IP \
-            "aws s3 sync /home/ubuntu/data s3://terraform-ec2-backup-bucket-2025-88/ --region us-east-1 || echo '⚠️ No data to sync, skipping backup.'"
+     
