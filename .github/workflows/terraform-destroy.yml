@@ -37,7 +37,20 @@ jobs:
         run: terraform init
         working-directory: ./iac
 
-      # 5️⃣ Terraform Destroy (Auto-Approve)
+      # 5️⃣ Backup EC2 Data to S3 BEFORE Destroy
+      - name: Backup EC2 Data to S3
+        run: |
+          echo "🚀 Running final backup before destroy..."
+          EC2_IP=$(terraform -chdir=./iac output -raw ec2_public_ip || echo "")
+          if [ -n "$EC2_IP" ]; then
+            chmod 400 ./iac/private_key.pem
+            ssh -o StrictHostKeyChecking=no -i ./iac/private_key.pem ubuntu@$EC2_IP \
+              "aws s3 sync /home/ubuntu/data s3://terraform-ec2-backup-bucket-2025-88/ --region us-east-1 || echo '⚠️ No data to sync, skipping backup.'"
+          else
+            echo "⚠️ No EC2 instance found. Skipping backup."
+          fi
+
+      # 6️⃣ Terraform Destroy (Auto-Approve)
       - name: Terraform Destroy
         run: terraform destroy -auto-approve
         working-directory: ./iac
