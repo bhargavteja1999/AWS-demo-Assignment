@@ -13,7 +13,6 @@ resource "aws_key_pair" "generated_keypair" {
   public_key = tls_private_key.generated_key.public_key_openssh
 }
 
-# Save private key locally
 resource "local_file" "private_key" {
   content         = tls_private_key.generated_key.private_key_pem
   filename        = "${path.module}/${var.private_key_filename}"
@@ -51,7 +50,7 @@ resource "aws_security_group" "dev_sg" {
   }
 }
 
-# 3️⃣ Create Ubuntu EC2 instance
+# 3️⃣ Ubuntu EC2 instance
 resource "aws_instance" "dev_ec2" {
   ami                    = var.ami_id
   instance_type          = var.instance_type
@@ -79,19 +78,18 @@ resource "null_resource" "run_docker_script" {
   provisioner "remote-exec" {
     inline = [
       "echo 'Waiting for EC2 to be ready...'",
-      "cloud-init status --wait || echo 'cloud-init may not be available, continuing...'",
+      "cloud-init status --wait || echo 'cloud-init may not available, continuing...'",
       "sleep 20"
     ]
   }
 
-  # Copy docker.sh to EC2
+  # Copy docker.sh from repo root
   provisioner "file" {
-    # Use path.root if docker.sh is in repo root
     source      = "${path.root}/docker.sh"
     destination = "/home/ubuntu/docker.sh"
   }
 
-  # Install Docker & run the script
+  # Install Docker & run docker.sh
   provisioner "remote-exec" {
     inline = [
       "sudo apt update -y",
