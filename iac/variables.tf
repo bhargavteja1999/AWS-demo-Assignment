@@ -11,9 +11,9 @@ variable "instance_type" {
 }
 
 variable "ami_id" {
-  description = "ubuntu AMI ID"
+  description = "Ubuntu AMI ID"
   type        = string
-  default     = "ami-0360c520857e3138f"
+  default     = "ami-0360c520857e3138f"  # Ubuntu 22.04 LTS in us-east-1
 }
 
 variable "key_pair_name" {
@@ -37,5 +37,5 @@ variable "security_group_name" {
 variable "instance_name" {
   description = "Name tag for EC2 instance"
   type        = string
-  default     = "Terraform-EC2-AmazonLinux-Docker"
+  default     = "Terraform-EC2-Ubuntu-Docker"
 }
