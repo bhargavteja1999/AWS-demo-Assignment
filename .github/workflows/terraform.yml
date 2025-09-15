@@ -5,8 +5,8 @@ on:
     branches:
       - main
     paths:
-      - "iac/main.tf"   # ✅ Only triggers when main.tf changes
-  workflow_dispatch:     # ✅ Still allow manual trigger
+      - "iac/main.tf"   # ✅ Trigger only if main.tf changes
+  workflow_dispatch:     # ✅ Manual trigger
 
 jobs:
   terraform-apply:
@@ -40,24 +40,33 @@ jobs:
         run: terraform init
         working-directory: ./iac
 
-      # 7️⃣ Terraform Plan
+      # 6️⃣ Terraform Plan
       - name: Terraform Plan
         run: terraform plan
         working-directory: ./iac
 
-      # 8️⃣ Terraform Apply
+      # 7️⃣ Terraform Apply
       - name: Terraform Apply
         run: terraform apply -auto-approve
         working-directory: ./iac
 
-      # 9️⃣ Show Terraform outputs
+      # 8️⃣ Show Terraform outputs
       - name: Show Terraform Outputs
         run: terraform output
         working-directory: ./iac
 
-      # 🔟 Upload private key as artifact
+      # 9️⃣ Upload private key as artifact (to connect manually if needed)
       - name: Upload Private Key
         uses: actions/upload-artifact@v4
         with:
           name: ec2-private-key
           path: ./iac/private_key.pem
+
+      # 🔟 Trigger Backup to S3 after EC2 is ready
+      - name: Backup EC2 Data to S3
+        run: |
+          echo "🚀 Running S3 Backup..."
+          EC2_IP=$(terraform -chdir=./iac output -raw ec2_public_ip)
+          chmod 400 ./iac/private_key.pem
+          ssh -o StrictHostKeyChecking=no -i ./iac/private_key.pem ubuntu@$EC2_IP \
+            "aws s3 sync /home/ubuntu/data s3://terraform-ec2-backup-bucket-2025-88/ --region us-east-1 || echo '⚠️ No data to sync, skipping backup.'"
