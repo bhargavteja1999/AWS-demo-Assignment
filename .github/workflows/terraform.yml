@@ -11,9 +11,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Debug repo to verify files
+      - name: List iac folder contents
+        run: ls -la ./iac
+
+      # 3️⃣ Set AWS credentials
       - name: Set up AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -21,34 +27,38 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Debug - list repo files
-        run: ls -R
-
+      # 4️⃣ Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.5
 
+      # 5️⃣ Terraform Init
       - name: Terraform Init
         run: terraform init
         working-directory: ./iac
 
-      - name: Terraform Destroy (if any existing resources)
+      # 6️⃣ Terraform Destroy (cleanup if any resources exist)
+      - name: Terraform Destroy
         run: terraform destroy -auto-approve
         working-directory: ./iac
 
+      # 7️⃣ Terraform Plan
       - name: Terraform Plan
         run: terraform plan
         working-directory: ./iac
 
+      # 8️⃣ Terraform Apply
       - name: Terraform Apply
         run: terraform apply -auto-approve
         working-directory: ./iac
 
+      # 9️⃣ Show Terraform outputs
       - name: Show Terraform Outputs
         run: terraform output
         working-directory: ./iac
 
+      # 🔟 Upload private key as artifact
       - name: Upload Private Key
         uses: actions/upload-artifact@v4
         with:
