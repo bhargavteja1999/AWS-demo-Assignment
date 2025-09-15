@@ -40,11 +40,6 @@ jobs:
         run: terraform init
         working-directory: ./iac
 
-      # 6️⃣ Terraform Destroy (cleanup if any resources exist)
-      - name: Terraform Destroy
-        run: terraform destroy -auto-approve
-        working-directory: ./iac
-
       # 7️⃣ Terraform Plan
       - name: Terraform Plan
         run: terraform plan
