@@ -10,12 +10,11 @@ on:
 jobs:
   terraform-destroy:
     runs-on: ubuntu-latest
-
-    if: github.event.inputs.confirm == 'DESTROY'  # Safety check
+    if: github.event.inputs.confirm == 'DESTROY'
 
     steps:
-      # 1️⃣ Checkout repository
-      - name: Checkout repo
+      # 1️⃣ Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       # 2️⃣ Configure AWS credentials
@@ -26,20 +25,23 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # 3️⃣ Install Terraform
+      # 3️⃣ Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.9.8  # or latest stable
+          terraform_version: 1.9.8
 
-      # 4️⃣ Terraform Init
+      # 4️⃣ Terraform Init (reconfigure to use remote state)
       - name: Terraform Init
-        run: terraform init
+        run: terraform init -reconfigure
         working-directory: ./iac
 
-     
+      # 5️⃣ Show Current State (Optional - helpful before destroy)
+      - name: Terraform Show State
+        run: terraform state list || echo "No state found in S3"
+        working-directory: ./iac
 
-      # 6️⃣ Terraform Destroy (Auto-Approve)
+      # 6️⃣ Terraform Destroy
       - name: Terraform Destroy
         run: terraform destroy -auto-approve
         working-directory: ./iac
