@@ -56,39 +56,43 @@ resource "aws_instance" "dev_ec2" {
   }
 }
 
+# 4️⃣ Null Resource to Install Docker & Run Script
 resource "null_resource" "run_docker_script" {
   depends_on = [aws_instance.dev_ec2]
 
   connection {
     type        = "ssh"
     host        = aws_instance.dev_ec2.public_ip
-    user        = "ec2-user" # change to "ubuntu" if using Ubuntu AMI
+    user        = "ubuntu" # Change to "ubuntu" if using Ubuntu AMI
     private_key = tls_private_key.generated_key.private_key_pem
-    timeout     = "4m"
+    timeout     = "5m"
   }
 
-  # Add a short delay to ensure EC2 is ready
+  # Wait for EC2 to finish bootstrapping
   provisioner "remote-exec" {
     inline = [
-      "echo 'Waiting for instance to be ready...'",
-      "sleep 30"
+      "echo 'Waiting for EC2 to be ready...'",
+      "cloud-init status --wait || echo 'cloud-init may not be available, continuing...'",
+      "sleep 20"
     ]
   }
 
+  # Copy docker.sh to EC2
   provisioner "file" {
     source      = "${path.module}/../docker.sh"
-    destination = "/home/ec2-user/docker.sh"
+    destination = "/home/ubuntu/docker.sh"
   }
 
+  # Install Docker & run the script
   provisioner "remote-exec" {
     inline = [
-      "chmod +x /home/ec2-user/docker.sh",
-      "sudo yum update -y",
-      "sudo yum install -y docker",
+      "chmod +x /home/ubuntu/docker.sh",
+      "sudo apt update -y",
+      "sudo apt install -y docker",
       "sudo systemctl enable docker",
       "sudo systemctl start docker",
-      "sudo usermod -aG docker ec2-user",
-      "/home/ec2-user/docker.sh"
+      "sudo usermod -aG docker ubuntu",
+      "/home/ubuntu/docker.sh"
     ]
   }
 }
