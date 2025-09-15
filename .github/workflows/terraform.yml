@@ -1,56 +1,41 @@
 name: Terraform EC2 Deployment
 
 on:
-  workflow_dispatch:    # Manual trigger
+  workflow_dispatch:
   push:
     branches:
-      - main           # Trigger on push to main
+      - main
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Debug - list repo files
-      - name: List repo files
+      - name: Debug - list repo files
         run: |
           echo "Workspace: ${{ github.workspace }}"
           ls -R
 
-      # Step 3: Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.5
 
-      # Step 4: Terraform Init
       - name: Terraform Init
         run: terraform init
-        working-directory: ${{ github.workspace }}/iac
+        working-directory: ./iac
 
-      # Step 5: Terraform Plan
       - name: Terraform Plan
         run: terraform plan
-        working-directory: ${{ github.workspace }}/iac
+        working-directory: ./iac
 
-      # Step 6: Terraform Apply
       - name: Terraform Apply
         run: terraform apply -auto-approve
-        working-directory: ${{ github.workspace }}/iac
+        working-directory: ./iac
 
-      # Step 7: Show Terraform Outputs (Public IP & Private Key Path)
       - name: Show Terraform Outputs
         run: terraform output
-        working-directory: ${{ github.workspace }}/iac
-
-      # Step 8: Upload Private Key as Artifact (so you can SSH)
-      - name: Upload private key
-        uses: actions/upload-artifact@v3
-        with:
-          name: ec2-private-key
-          path: ${{ github.workspace }}/iac/private_key.pem
-          if-no-files-found: error
+        working-directory: ./iac
