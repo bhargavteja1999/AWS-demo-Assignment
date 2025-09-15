@@ -78,12 +78,12 @@ resource "null_resource" "run_docker_script" {
   provisioner "remote-exec" {
     inline = [
       "echo 'Waiting for EC2 to be ready...'",
-      "cloud-init status --wait || echo 'cloud-init may not available, continuing...'",
+      "cloud-init status --wait || echo 'cloud-init may not be available, continuing...'",
       "sleep 20"
     ]
   }
 
-  # Copy docker.sh from repo root
+  # Copy docker.sh from repo root to EC2
   provisioner "file" {
     source      = "${path.root}/docker.sh"
     destination = "/home/ubuntu/docker.sh"
