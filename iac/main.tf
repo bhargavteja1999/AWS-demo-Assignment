@@ -1,3 +1,13 @@
+terraform {
+  backend "s3" {
+    bucket         = "terraform-ec2-backup-bucket-2025-88" # ✅ Existing bucket (no creation)
+    key            = "terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = true
+    dynamodb_table = "terraform-ec2-backup-bucket-2025-88-tfstate-locks" # ✅ Make sure DynamoDB exists manually
+  }
+}
+
 provider "aws" {
   region = var.aws_region
 }
@@ -103,6 +113,7 @@ resource "null_resource" "run_docker_script" {
       "sudo usermod -aG docker ubuntu",
       "chmod +x /home/ubuntu/docker.sh",
       "sudo /home/ubuntu/docker.sh",
+      # Backup data to S3 bucket (safe if /home/ubuntu/data doesn't exist)
       "aws s3 sync /home/ubuntu/data s3://terraform-ec2-backup-bucket-2025-88/ --region ${var.aws_region} || echo 'No data to sync, skipping backup...'"
     ]
   }
@@ -110,11 +121,4 @@ resource "null_resource" "run_docker_script" {
 
 # -------------------------------
 # 5️⃣ Outputs
-# -------------------------------
-output "ec2_public_ip" {
-  value = aws_instance.dev_ec2.public_ip
-}
-
-output "private_key_path" {
-  value = local_file.private_key.filename
-}
+# --------------------
