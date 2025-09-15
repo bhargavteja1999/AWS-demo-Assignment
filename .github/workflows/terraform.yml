@@ -1,10 +1,10 @@
 name: Terraform EC2 Deployment
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:    # Manual trigger
   push:
     branches:
-      - main
+      - main           # Trigger on push to main
 
 jobs:
   terraform:
@@ -15,38 +15,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Setup Terraform
+      # Step 2: Debug - list files in repo root
+      - name: List repo files
+        run: |
+          ls -la
+
+      # Step 3: Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.5
 
-      # Step 3: Debug - list files to confirm .tf files exist
-      - name: List Terraform folder files
-        run: ls -la
-        working-directory: ./terraform
-
       # Step 4: Terraform Init
       - name: Terraform Init
         run: terraform init
-        working-directory: ./terraform
 
-      # Step 5: Terraform Plan
-      - name: Terraform Plan
-        run: terraform plan
-        working-directory: ./terraform
-
-      # Step 6: Terraform Validate
-      - name: Terraform Validate
-        run: terraform validate
-        working-directory: ./terraform
-
-      # Step 7: Terraform Apply
+      # Step 5: Terraform Apply
       - name: Terraform Apply
         run: terraform apply -auto-approve
-        working-directory: ./terraform
-
-      # Step 8: Show Terraform Outputs
-      - name: Show Terraform Outputs
-        run: terraform output
-        working-directory: ./terraform
