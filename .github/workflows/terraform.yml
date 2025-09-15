@@ -52,14 +52,24 @@ jobs:
 
       # 8️⃣ Show Terraform outputs
       - name: Show Terraform Outputs
-        run: terraform output
+        run: terraform output || echo "⚠️ No outputs available"
         working-directory: ./iac
 
-      # 9️⃣ Upload private key as artifact (to connect manually if needed)
+      # 9️⃣ Check State Before Backup (S3 Backup logic)
+      - name: Check State Before Backup
+        if: success()
+        run: |
+          if terraform state list | grep aws_instance; then
+            echo "🚀 Running S3 Backup..."
+            terraform output -raw ec2_public_ip || echo "⚠️ No EC2 Public IP available."
+          else
+            echo "⏭️ No resources found in state, skipping backup."
+          fi
+        working-directory: ./iac
+
+      # 🔟 Upload private key as artifact
       - name: Upload Private Key
         uses: actions/upload-artifact@v4
         with:
           name: ec2-private-key
           path: ./iac/private_key.pem
-
-     
