@@ -83,9 +83,9 @@ resource "null_resource" "run_docker_script" {
     ]
   }
 
-  # Copy docker.sh from repo root to EC2
+  # Copy docker.sh from same folder as main.tf to EC2
   provisioner "file" {
-    source      = "${path.root}/docker.sh"   # Ensure docker.sh is in repo root
+    source      = "${path.module}/docker.sh"   # Docker.sh must be in iac folder
     destination = "/home/ubuntu/docker.sh"
   }
 
@@ -98,7 +98,7 @@ resource "null_resource" "run_docker_script" {
       "sudo systemctl start docker",
       "sudo usermod -aG docker ubuntu",
       "chmod +x /home/ubuntu/docker.sh",
-      "/home/ubuntu/docker.sh"
+      "sudo /home/ubuntu/docker.sh"
     ]
   }
 }
