@@ -33,11 +33,19 @@ jobs:
         run: terraform init
         working-directory: ./iac
 
-      - name: Terraform Plan
+      - name: Terraform Plan (Before Destroy)
+        run: terraform plan -destroy
+        working-directory: ./iac
+
+      - name: Terraform Destroy (Clean Up Previous Resources)
+        run: terraform destroy -auto-approve
+        working-directory: ./iac
+
+      - name: Terraform Plan (Fresh Plan)
         run: terraform plan
         working-directory: ./iac
 
-      - name: Terraform Apply
+      - name: Terraform Apply (Deploy New Resources)
         run: terraform apply -auto-approve
         working-directory: ./iac
 
