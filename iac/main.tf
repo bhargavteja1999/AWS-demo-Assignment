@@ -86,7 +86,8 @@ resource "null_resource" "run_docker_script" {
 
   # Copy docker.sh to EC2
   provisioner "file" {
-    source      = "${path.module}/docker.sh"
+    # Use path.root if docker.sh is in repo root
+    source      = "${path.root}/docker.sh"
     destination = "/home/ubuntu/docker.sh"
   }
 
