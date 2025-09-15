@@ -40,8 +40,3 @@ variable "instance_name" {
   default     = "Terraform-EC2-Ubuntu-Docker"
 }
 
-variable "backup_bucket_name" {
-  description = "Name of the S3 bucket to backup files (must be globally unique)"
-  type        = string
-  default     = "terraform-ec2-backup-bucket-2025-88"
-}
