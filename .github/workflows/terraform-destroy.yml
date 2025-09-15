@@ -33,15 +33,15 @@ jobs:
 
       # 4️⃣ Terraform Init (reconfigure to use remote state)
       - name: Terraform Init
-        run: terraform init -reconfigure
+        run: terraform init -reconfigure -input=false
         working-directory: ./iac
 
-      # 5️⃣ Show Current State (Optional - helpful before destroy)
+      # 5️⃣ Show Current State (Optional)
       - name: Terraform Show State
-        run: terraform state list || echo "No state found in S3"
+        run: terraform state list || echo "⚠️ No state found in S3"
         working-directory: ./iac
 
       # 6️⃣ Terraform Destroy
       - name: Terraform Destroy
-        run: terraform destroy -auto-approve
+        run: terraform destroy -auto-approve -input=false
         working-directory: ./iac
