@@ -43,5 +43,5 @@ variable "instance_name" {
 variable "backup_bucket_name" {
   description = "Name of the S3 bucket to backup files (must be globally unique)"
   type        = string
-  default     = "terraform-ec2-backup-bucket"
+  default     = "terraform-ec2-backup-bucket-2025"
 }
