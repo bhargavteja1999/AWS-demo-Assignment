@@ -1,17 +1,17 @@
 name: Terraform EC2 Deployment
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:    # Manual trigger
   push:
     branches:
-      - main
+      - main           # Trigger on push to main
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
+      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -21,22 +21,6 @@ jobs:
         with:
           terraform_version: 1.9.5
 
-      # Step 3: Optional debug - list files
+      # Step 3: Debug - List files in repo root
       - name: List repo files
         run: ls -la
-
-      # Step 4: Terraform Init
-      - name: Terraform Init
-        run: terraform init
-
-      # Step 5: Terraform Validate
-      - name: Terraform Validate
-        run: terraform validate
-
-      # Step 6: Terraform Apply
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
-
-      # Step 7: Show Terraform Outputs
-      - name: Show Outputs
-        run: terraform output
