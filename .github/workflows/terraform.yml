@@ -10,21 +10,17 @@ jobs:
   terraform:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: ./terraform  # 👈 CHANGE to your actual folder name
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: List files (debug)
+        run: ls -la
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.5
-
-      - name: List Files (Debug)
-        run: ls -la
 
       - name: Terraform Init
         run: terraform init
