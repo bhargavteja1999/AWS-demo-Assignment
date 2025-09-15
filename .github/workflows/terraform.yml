@@ -2,9 +2,6 @@ name: Terraform EC2 Deployment
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
   terraform:
@@ -13,9 +10,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      - name: List files in repo root (debug)
-        run: ls -la
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
