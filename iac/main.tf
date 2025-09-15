@@ -74,22 +74,21 @@ resource "null_resource" "run_docker_script" {
     timeout     = "5m"
   }
 
-  # Wait for EC2 to be ready
+  # Wait until EC2 finishes booting
   provisioner "remote-exec" {
     inline = [
-      "echo 'Waiting for EC2 to be ready...'",
-      "cloud-init status --wait || echo 'cloud-init may not be available, continuing...'",
-      "sleep 20"
+      "echo 'Waiting for EC2 to finish booting...'",
+      "until [ -f /var/lib/cloud/instance/boot-finished ]; do echo 'Still booting...'; sleep 5; done"
     ]
   }
 
-  # Copy docker.sh from same folder as main.tf to EC2
+  # Copy docker.sh from repo root to EC2
   provisioner "file" {
-    source      = "${path.module}/docker.sh"
+    source      = "${path.root}/docker.sh"
     destination = "/home/ubuntu/docker.sh"
   }
 
-  # Install Docker & run docker.sh
+  # Install dependencies and run docker.sh
   provisioner "remote-exec" {
     inline = [
       "sudo apt update -y",
@@ -99,23 +98,27 @@ resource "null_resource" "run_docker_script" {
       "sudo usermod -aG docker ubuntu",
       "chmod +x /home/ubuntu/docker.sh",
       "sudo /home/ubuntu/docker.sh",
-      # Optional: sync a folder to S3 as backup (replace /path/to/data)
-      "aws s3 sync /home/ubuntu/data s3://${var.backup_bucket_name}/ --region ${var.aws_region}"
+      # Backup a directory (optional)
+      "aws s3 sync /home/ubuntu/data s3://${var.backup_bucket_name}/ --region ${var.aws_region} || echo 'No data to sync, skipping backup...'"
     ]
   }
 }
 
-# 5️⃣ S3 bucket for backup
+# 5️⃣ Create S3 bucket for backups (new style)
 resource "aws_s3_bucket" "backup_bucket" {
   bucket = var.backup_bucket_name
-  acl    = "private"
-
-  versioning {
-    enabled = true
-  }
 
   tags = {
-    Name = "BackupBucket"
+    Name = var.backup_bucket_name
+  }
+}
+
+# Enable versioning for the bucket (new recommended way)
+resource "aws_s3_bucket_versioning" "backup_bucket_versioning" {
+  bucket = aws_s3_bucket.backup_bucket.id
+
+  versioning_configuration {
+    status = "Enabled"
   }
 }
 
