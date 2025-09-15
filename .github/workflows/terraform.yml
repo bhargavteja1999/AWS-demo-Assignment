@@ -62,3 +62,11 @@ jobs:
       - name: Show Terraform Outputs
         run: terraform output
         working-directory: ./iac
+
+
+      # ✅ Upload private key so you can download it
+      - name: Upload Private Key
+        uses: actions/upload-artifact@v3
+        with:
+          name: ec2-private-key
+          path: ./iac/private_key.pem
