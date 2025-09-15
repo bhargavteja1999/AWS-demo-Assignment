@@ -26,3 +26,19 @@ jobs:
         run: |
           ls -la
           docker --version
+
+      # Step 4: Terraform Init
+      - name: Terraform Init
+        run: terraform init
+
+      # Step 5: Terraform Validate
+      - name: Terraform Validate
+        run: terraform validate
+
+      # Step 6: Terraform Apply
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+
+      # Step 7: Show Terraform Outputs
+      - name: Show Outputs
+        run: terraform output
