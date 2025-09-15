@@ -85,7 +85,7 @@ resource "null_resource" "run_docker_script" {
 
   # Copy docker.sh from same folder as main.tf to EC2
   provisioner "file" {
-    source      = "${path.module}/docker.sh"   # Docker.sh must be in iac folder
+    source      = "${path.module}/docker.sh"
     destination = "/home/ubuntu/docker.sh"
   }
 
@@ -93,21 +93,41 @@ resource "null_resource" "run_docker_script" {
   provisioner "remote-exec" {
     inline = [
       "sudo apt update -y",
-      "sudo apt install -y docker.io",
+      "sudo apt install -y docker.io awscli",
       "sudo systemctl enable docker",
       "sudo systemctl start docker",
       "sudo usermod -aG docker ubuntu",
       "chmod +x /home/ubuntu/docker.sh",
-      "sudo /home/ubuntu/docker.sh"
+      "sudo /home/ubuntu/docker.sh",
+      # Optional: sync a folder to S3 as backup (replace /path/to/data)
+      "aws s3 sync /home/ubuntu/data s3://${var.backup_bucket_name}/ --region ${var.aws_region}"
     ]
   }
 }
 
-# 5️⃣ Outputs
+# 5️⃣ S3 bucket for backup
+resource "aws_s3_bucket" "backup_bucket" {
+  bucket = var.backup_bucket_name
+  acl    = "private"
+
+  versioning {
+    enabled = true
+  }
+
+  tags = {
+    Name = "BackupBucket"
+  }
+}
+
+# 6️⃣ Outputs
 output "ec2_public_ip" {
   value = aws_instance.dev_ec2.public_ip
 }
 
 output "private_key_path" {
   value = local_file.private_key.filename
+}
+
+output "backup_bucket_name" {
+  value = aws_s3_bucket.backup_bucket.bucket
 }
